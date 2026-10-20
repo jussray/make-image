@@ -1,0 +1,21 @@
+{
+  "schema": "jussco/visual-experience/v1",
+  "kind": "architecture",
+  "title": "Juss & Co. Source-Bound Play Universe",
+  "source_note": "User-supplied source snapshot dated 2026-10-20. Labels are not independently authenticated by renderer; no runtime or launch claims.",
+  "items": [
+    {"id":"fcr", "title":"Founder Control Room", "summary":"Independent founder approval and evidence operating plane.", "state":"VERIFIED_SOURCE"},
+    {"id":"chief", "title":"Chief AI Machine", "summary":"Independent intelligence and proposal orchestration.", "state":"VERIFIED_SOURCE"},
+    {"id":"sol", "title":"SolContinuity", "summary":"Independent continuity, provider recovery and receipts.", "state":"VERIFIED_SOURCE"},
+    {"id":"promptos", "title":"PromptOS", "summary":"Independent prompt, skills and instruction governance.", "state":"VERIFIED_SOURCE"},
+    {"id":"sync", "title":"SYNC Party", "summary":"Browser room loop; live production access not verified by this image.", "state":"VERIFIED_SOURCE"},
+    {"id":"bipseek", "title":"Bip & Seek", "summary":"Roblox code exists; Studio play and release remain unverified.", "state":"VERIFIED_SOURCE"},
+    {"id":"jinx", "title":"Jungle Jinx", "summary":"Godot gameplay in open PR #1; main contains a README only.", "state":"INFERRED"},
+    {"id":"lumora", "title":"LUMORA", "summary":"Local browser forest and tracing prototype; public play unverified.", "state":"VERIFIED_SOURCE"}
+  ],
+  "edges": [
+    {"from":"fcr", "to":"chief", "label":"Governed evidence handoff"},
+    {"from":"fcr", "to":"sol", "label":"Recovery signals"},
+    {"from":"fcr", "to":"promptos", "label":"Instruction proposals"}
+  ]
+}
