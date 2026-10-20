@@ -78,7 +78,7 @@ def fit_text(draw, text, max_width, font_size, bold=False):
         f = face(n, bold)
         if draw.textbbox((0, 0), text, font=f)[2] <= max_width:
             return f
-    return face(12, bold)
+    raise ValueError("Text cannot fit safely on the canvas; shorten the label")
 
 
 def wrap(draw, text, font, max_width, max_lines=3):
@@ -89,6 +89,8 @@ def wrap(draw, text, font, max_width, max_lines=3):
         if draw.textbbox((0, 0), tryline, font=font)[2] <= max_width:
             current = tryline
         else:
+            if draw.textbbox((0, 0), word, font=font)[2] > max_width:
+                raise ValueError("Item summary cannot fit its visual card; shorten the summary")
             if current:
                 lines.append(current)
             current = word
@@ -119,6 +121,8 @@ def render_manifest(manifest_path: Path, output: Path, receipt: Path, *, before:
                 if src.width*src.height > 24_000_000:
                     raise ValueError("Screenshot exceeds 24 megapixels")
                 src.verify()
+        if before == after:
+            raise ValueError("Canon comparison requires two distinct source screenshots")
         originals |= {before, after}
     if output.suffix.lower() != '.png' or receipt.suffix.lower() != '.json' or len({output, receipt, *originals}) < len(originals)+2:
         raise ValueError("PNG and receipt JSON paths must be distinct and not overwrite sources")
@@ -175,14 +179,14 @@ def render_manifest(manifest_path: Path, output: Path, receipt: Path, *, before:
     d.text((78,H-73),note,font=fit_text(d,note,W-160,15),fill='#F4C97C')
     output.parent.mkdir(parents=True,exist_ok=True)
     receipt.parent.mkdir(parents=True,exist_ok=True)
-    img.save(output, format='PNG', optimize=True)
-    with Image.open(output) as check:
-        check.verify()
-    with Image.open(output) as check:
-        if check.format!='PNG' or check.size!=(W,H):
-            output.unlink(missing_ok=True)
-            raise ValueError('Output verification failed')
-    result = {
+    try:
+        img.save(output, format='PNG', optimize=True)
+        with Image.open(output) as check:
+            check.verify()
+        with Image.open(output) as check:
+            if check.format!='PNG' or check.size!=(W,H):
+                raise ValueError('Output verification failed')
+        result = {
         'schema': 'makeimage/visual-experience-receipt/v1',
         'state': 'VERIFIED_LOCAL_RENDER',
         'kind': raw['kind'],
@@ -192,7 +196,12 @@ def render_manifest(manifest_path: Path, output: Path, receipt: Path, *, before:
         'claims': {'github_verified': False, 'runtime_verified': False, 'publish_approved': False},
         'limitations': ['Supplied manifest source states have not been independently authenticated', 'Static PNG cannot reproduce interactive behavior', 'Source screenshots and rights require independent review'],
     }
-    receipt.write_text(json.dumps(result,indent=2,sort_keys=True)+'\n',encoding='utf-8')
+        receipt.write_text(json.dumps(result,indent=2,sort_keys=True)+'\n',encoding='utf-8')
+    except Exception:
+        # Neither an invalid image nor an unreceipted image may remain as a claimed proof.
+        output.unlink(missing_ok=True)
+        receipt.unlink(missing_ok=True)
+        raise
     return result
 
 
