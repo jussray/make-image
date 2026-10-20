@@ -2,6 +2,7 @@ name: MakeImage local render proof
 on:
   push:
     paths:
+      - 'assets/**'
       - 'demo.py'
       - 'requirements.txt'
       - 'CAPABILITY.md'
