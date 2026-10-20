@@ -3,6 +3,8 @@ on:
   push:
     paths:
       - 'demo.py'
+      - 'visual_experience.py'
+      - 'examples/**'
       - 'requirements.txt'
       - 'CAPABILITY.md'
       - 'EXPORT_AUDIT.md'
