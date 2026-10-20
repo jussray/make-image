@@ -1,0 +1,20 @@
+name: MAKEIMAGE local proof checks
+on:
+  push:
+    branches: ['feat/character-reference-contract']
+  pull_request:
+    paths: ['demo.py', 'src/**', 'tests/**', 'requirements.txt', '.github/workflows/makeimage-proof.yml']
+jobs:
+  proof:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r requirements.txt
+      - run: python -m unittest discover -s tests -v
+      - run: python demo.py --output /tmp/makeimage-check.png
+      - run: python -c "from PIL import Image; Image.open('/tmp/makeimage-check.png').verify()"
