@@ -4,12 +4,20 @@ on:
     paths:
       - 'demo.py'
       - 'requirements.txt'
+      - 'CAPABILITY.md'
+      - 'EXPORT_AUDIT.md'
+      - 'FOUNDER_PROVENANCE.md'
+      - 'FOUNDER_DECISIONS_SUPPLEMENT.md'
       - 'tests/**'
       - '.github/workflows/demo-checks.yml'
   pull_request:
     paths:
       - 'demo.py'
       - 'requirements.txt'
+      - 'CAPABILITY.md'
+      - 'EXPORT_AUDIT.md'
+      - 'FOUNDER_PROVENANCE.md'
+      - 'FOUNDER_DECISIONS_SUPPLEMENT.md'
       - 'tests/**'
       - '.github/workflows/demo-checks.yml'
 permissions:
