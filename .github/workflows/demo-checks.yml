@@ -5,6 +5,7 @@ on:
       - 'demo.py'
       - 'visual_experience.py'
       - 'examples/**'
+      - 'README.md'
       - 'requirements.txt'
       - 'CAPABILITY.md'
       - 'EXPORT_AUDIT.md'
@@ -15,6 +16,9 @@ on:
   pull_request:
     paths:
       - 'demo.py'
+      - 'visual_experience.py'
+      - 'examples/**'
+      - 'README.md'
       - 'requirements.txt'
       - 'CAPABILITY.md'
       - 'EXPORT_AUDIT.md'
@@ -48,6 +52,20 @@ jobs:
           assert r['state']=='VERIFIED_LOCAL_RENDER'
           assert r['output']['sha256']==hashlib.sha256(Path('proof/demo.png').read_bytes()).hexdigest()
           assert r['continuity_cookie']['publish_authority'] is False
+          PY
+      - name: Render and verify source-labeled visual architecture artifact
+        run: |
+          python visual_experience.py --manifest examples/jussco-public-experience.json --output proof/jussco-map.png --receipt proof/jussco-map.receipt.json
+          python - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          from PIL import Image
+          p=Path('proof/jussco-map.png')
+          r=json.loads(Path('proof/jussco-map.receipt.json').read_text())
+          with Image.open(p) as img:
+              img.verify()
+          assert r['output']['sha256']==hashlib.sha256(p.read_bytes()).hexdigest()
+          assert r['claims']=={'github_verified':False,'runtime_verified':False,'publish_approved':False}
           PY
       - uses: actions/upload-artifact@v4
         with:
