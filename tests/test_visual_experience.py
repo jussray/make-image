@@ -1,6 +1,7 @@
 import json
 import tempfile
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 from PIL import Image
 import sys
@@ -70,5 +71,43 @@ class VisualExperienceTest(unittest.TestCase):
             path=root/'flow.json';path.write_text(json.dumps(m))
             proof=render_manifest(path,root/'flow.png',root/'flow.receipt.json')
             self.assertFalse(proof['claims']['runtime_verified'])
+
+    def test_missing_receipt_rolls_back_rendered_output(self):
+        with tempfile.TemporaryDirectory() as dirname:
+            root=Path(dirname)
+            manifest=root/'plan.json'
+            manifest.write_text(json.dumps(FIXTURE))
+            png,receipt=root/'orphan.png',root/'no-receipt.json'
+            with patch.object(Path,'write_text',side_effect=OSError('simulated receipt storage failure')):
+                with self.assertRaisesRegex(OSError,'receipt storage failure'):
+                    render_manifest(manifest,png,receipt)
+            self.assertFalse(png.exists(),'No PNG without its matching evidence receipt')
+            self.assertFalse(receipt.exists())
+
+    def test_oversized_single_word_and_heading_do_not_clip_silently(self):
+        with tempfile.TemporaryDirectory() as dirname:
+            root=Path(dirname)
+            too_wide=json.loads(json.dumps(FIXTURE))
+            too_wide['items'][0]['summary']='W'*230
+            a=root/'longword.json';a.write_text(json.dumps(too_wide))
+            with self.assertRaisesRegex(ValueError,'cannot fit'):
+                render_manifest(a,root/'longword.png',root/'longword.receipt.json')
+            self.assertFalse((root/'longword.png').exists())
+            too_wide=json.loads(json.dumps(FIXTURE))
+            too_wide['title']='W'*100
+            b=root/'longtitle.json';b.write_text(json.dumps(too_wide))
+            with self.assertRaisesRegex(ValueError,'cannot fit'):
+                render_manifest(b,root/'longtitle.png',root/'longtitle.receipt.json')
+            self.assertFalse((root/'longtitle.png').exists())
+
+    def test_canon_rejects_self_comparison(self):
+        with tempfile.TemporaryDirectory() as dirname:
+            root=Path(dirname)
+            source=root/'same.png'
+            Image.new('RGB',(400,300),(10,25,70)).save(source)
+            plan=dict(FIXTURE,kind='canon')
+            path=root/'canon.json';path.write_text(json.dumps(plan))
+            with self.assertRaisesRegex(ValueError,'two distinct'):
+                render_manifest(path,root/'false-comparison.png',root/'false-comparison.json',before=source,after=source)
 
 if __name__=='__main__':unittest.main()
