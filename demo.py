@@ -77,7 +77,7 @@ def load_brand_qr() -> tuple[Image.Image, str]:
         raise ImageFlowError('Local first-party QR asset is unavailable.') from error
     if 'viewBox="0 0 41 41"' not in xml or '<script' in xml or '<image' in xml:
         raise ImageFlowError('Unexpected first-party QR asset format.')
-    modules = [(int(x), int(y)) for x, y in re.findall(r'M(\\d+) (\\d+)h1v1h-1z', xml)]
+    modules = [(int(x), int(y)) for x, y in re.findall(r'M(\d+) (\d+)h1v1h-1z', xml)]
     if len(modules) < 180 or any(not (4 <= x < 37 and 4 <= y < 37) for x, y in modules):
         raise ImageFlowError('QR matrix failed structural verification.')
     out = Image.new('RGB', (41, 41), 'white')
