@@ -27,6 +27,27 @@ Long or unfit brand claims now fail closed rather than silently clipping text. S
 
 Receipts include an input digest, output digest, continuity fingerprint and non-authorizing continuity cookie. They **do not** establish that an AI image provider rendered anything, nor do they grant likeness, copyright, or publication rights. Cross-product character continuity, when added, must match approved project-scoped, versioned references; do not infer it from a filename or generated resemblance. FCR holds external publication authorization. ULTRATHINK/JussOS governs evidence and authority, but remains a separate system. MakeVideo, StoryEngine, and other products remain peers.
 
+## Produce architecture, playtest and canon images
+
+Use the same `jussco/visual-experience/v1` JSON manifest as the MakeVideo walkthrough importer:
+
+```bash
+python3 visual_experience.py --manifest examples/jussco-public-experience.json \\
+  --output out/jussco-map.png --receipt out/jussco-map.receipt.json
+```
+
+Change `kind` to `playtest` to render a source-labeled gameplay flow. For a comparison of two **actual screenshots you supply** (never a synthetic claim about a live site), change `kind` to `canon` and provide both local images:
+
+```bash
+python3 visual_experience.py --manifest examples/jussco-public-experience.json \\
+  --before before.png --after after.png \\
+  --output out/canon.png --receipt out/canon.receipt.json
+```
+
+For canon comparisons the manifest must have `"kind":"canon"`. Original screenshots are preserved unchanged. The static PNG is a *visual report*, not an interactive webpage, live GitHub readback, AI-generated image, or publication approval. The receipt includes SHA-256 of source manifest, supplied screenshots, and rendered PNG with `github_verified:false`, `runtime_verified:false`, `publish_approved:false`. Unknown/unsupported evidence labels fail closed. Use only visuals you have rights to share.
+
+MakeVideo is the separate peer that turns these source-labeled items into editable animated shots and actual local animatics; neither repository inherits FCR's authority.
+
 ## Verify
 
 ```bash
