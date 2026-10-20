@@ -19,6 +19,8 @@ python3 demo.py --reference ./my-owned-reference.jpg --title "Scene one" --outpu
 
 Supported source formats: local JPEG, PNG, WebP, 16 MiB max, max 24 megapixels. Output dimensions configurable using `--width` and `--height`. There is no network call, model call, API credential, remote upload, biometric identity matching, or publication. The original reference is opened read-only, the output strips source EXIF metadata, and both outputs refuse to overwrite a source or existing target. Read the rendered result before approving its use.
 
+Long or unfit brand claims now fail closed rather than silently clipping text. Shorten the title or subtitle when the renderer reports a layout constraint.
+
 ## Actual flow and proof boundary
 
 `source image (optional) / original local procedure -> validated composition -> PNG pixels on disk -> PNG readback -> SHA-256 provenance receipt -> human visual review -> separate publishing authority`.

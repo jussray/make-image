@@ -22,6 +22,15 @@ class ImageProductionTest(unittest.TestCase):
             self.assertFalse(json.loads(receipt.read_text())['continuity_cookie']['publish_authority'])
             with self.assertRaises(ImageFlowError):render(png,receipt,title='Other',subtitle='Other',width=640,height=360)
 
+    def test_oversized_brand_claim_fails_closed_without_clipping(self):
+        with tempfile.TemporaryDirectory() as work:
+            root = Path(work)
+            png, receipt = root/'image.png', root/'receipt.json'
+            with self.assertRaisesRegex(ImageFlowError, 'cannot fit safely'):
+                render(png,receipt,title='W'*100,subtitle='',width=640,height=360)
+            self.assertFalse(png.exists())
+            self.assertFalse(receipt.exists())
+
     def test_reference_never_mutated_and_bad_paths_fail_closed(self):
         with tempfile.TemporaryDirectory() as work:
             root=Path(work)

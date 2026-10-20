@@ -112,9 +112,20 @@ def render(output: Path, receipt: Path, *, title: str, subtitle: str, width: int
     d=ImageDraw.Draw(overlay,'RGBA')
     left=int(width*.065)
     d.rounded_rectangle((left,int(height*.665),int(width*.91),int(height*.90)),radius=22,fill=(8,8,29,175),outline=(165,107,253,100),width=2)
-    d.text((left+int(width*.035),int(height*.69)),title or 'Untitled image',font=font(max(22,width//27)),fill=(248,240,255,255),stroke_width=0)
+    title_text = title or 'Untitled image'
+    available_width = int(width * .91) - left - int(width * .075)
+    def fitted_font(text, initial):
+        # Never silently clip a factual or brand claim.
+        for px in range(initial, 13, -1):
+            candidate = font(px)
+            if d.textbbox((0, 0), text, font=candidate)[2] <= available_width:
+                return candidate
+        raise ImageFlowError('Text cannot fit safely on the canvas; shorten the title or subtitle.')
+    title_font = fitted_font(title_text, max(22, width//27))
+    subtitle_font = fitted_font(subtitle, max(16, width//52)) if subtitle else None
+    d.text((left+int(width*.035),int(height*.69)),title_text,font=title_font,fill=(248,240,255,255),stroke_width=0)
     if subtitle:
-        d.text((left+int(width*.035),int(height*.79)),subtitle,font=font(max(16,width//52)),fill=(203,192,238,255))
+        d.text((left+int(width*.035),int(height*.79)),subtitle,font=subtitle_font,fill=(203,192,238,255))
     d.text((left,int(height*.068)), 'MAKEIMAGE / LOCAL COMPOSITE',font=font(max(13,width//80)),fill=(203,179,255,235))
     image=Image.alpha_composite(base.convert('RGBA'),overlay).convert('RGB')
     output.parent.mkdir(parents=True,exist_ok=True)
