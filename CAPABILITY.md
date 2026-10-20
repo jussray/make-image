@@ -9,3 +9,9 @@ A production is not complete without inspecting its rendered output. Report REAL
 
 ## Image-specific contract
 Interpret founder intent; identify audience, product, proof object, and destination. Generate original visuals only with authorized source assets. Maintain product, character, setting, typography, and claim continuity. Do not invent a real product UI. Inspect the actual image for identity drift, legibility, composition, and claim accuracy. Record asset version, evidence digest, fingerprint, and supersession state. Publishing requires separate authority.
+
+## Reconciled runtime boundary (2026-10-20)
+- Verified local code on `main@7dcff0c075c1f7b84ea2032783b6d7a3bd28d980` provides `demo.py`, Pillow-backed PNG output, optional reference compositing, safe-text-fit rejection, output SHA-256 receipt and non-authorizing continuity cookie.
+- This is *local image composition only*. It is **not** generative model inference, a licensed likeness determination, or published imagery.
+- The shared ULTRATHINK kernel remains source authority; the repo owns only MakeImage execution specifics.
+- Release proof requires examining produced pixels and source rights, then separately authorizing distribution.

@@ -1,0 +1,54 @@
+name: MakeImage local render proof
+on:
+  push:
+    paths:
+      - 'demo.py'
+      - 'requirements.txt'
+      - 'CAPABILITY.md'
+      - 'EXPORT_AUDIT.md'
+      - 'FOUNDER_PROVENANCE.md'
+      - 'FOUNDER_DECISIONS_SUPPLEMENT.md'
+      - 'tests/**'
+      - '.github/workflows/demo-checks.yml'
+  pull_request:
+    paths:
+      - 'demo.py'
+      - 'requirements.txt'
+      - 'CAPABILITY.md'
+      - 'EXPORT_AUDIT.md'
+      - 'FOUNDER_PROVENANCE.md'
+      - 'FOUNDER_DECISIONS_SUPPLEMENT.md'
+      - 'tests/**'
+      - '.github/workflows/demo-checks.yml'
+permissions:
+  contents: read
+jobs:
+  png-render-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install -r requirements.txt
+      - run: python -m unittest discover -s tests -v
+      - name: Render and verify PNG artifact
+        run: |
+          python demo.py --title "GitHub Actions proof" --output proof/demo.png --receipt proof/demo.receipt.json
+          python - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          from PIL import Image
+          r=json.loads(Path('proof/demo.receipt.json').read_text())
+          with Image.open('proof/demo.png') as image:
+              image.verify()
+          assert r['state']=='VERIFIED_LOCAL_RENDER'
+          assert r['output']['sha256']==hashlib.sha256(Path('proof/demo.png').read_bytes()).hexdigest()
+          assert r['continuity_cookie']['publish_authority'] is False
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: makeimage-verified-local-demo
+          path: proof/
+          if-no-files-found: error

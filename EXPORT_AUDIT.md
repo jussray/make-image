@@ -28,3 +28,11 @@
 
 ## Rollback
 Delete the dedicated export branch; do not delete or alter the ULTRATHINK source.
+
+## Superseding current-state audit — 2026-10-20
+Historical 2026-10-10 findings above describe the initial contract-only export, not the current implementation.
+- VERIFIED current base: `main@7dcff0c075c1f7b84ea2032783b6d7a3bd28d980` added an independently tested local PNG composition path (`demo.py`), 3 focused regression tests, GitHub Actions PNG readback and output digest.
+- The feature PR #2 merged as squash `7dcff0c075c1f7b84ea2032783b6d7a3bd28d980` after exact-head push and PR CI. Passing local render is **not** an external AI generation or model connection.
+- This draft PR is contract/provenance-only and must leave the local renderer, requirements, workflow and README from main intact.
+- Open gates: authorized image generation backend; rights/likeness review; useful user-facing image experience; inspected final pixels; FCR release authorization.
+- This merge/reconciliation changes contract docs and CI triggers only. No new source, secrets, deployment or publish authority.

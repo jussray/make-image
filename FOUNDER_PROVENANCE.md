@@ -24,3 +24,6 @@ Before merge: reconcile against current source, inspect diff and checks, run foc
 - Preserve image-first creative approval and character/product identity continuity.
 - Require grounded source assets and avoid presenting imagined product interfaces as verified reality.
 - Image inspection and provenance are separate from generation; neither is evidenced as implemented by this manifest.
+
+## Current evidence boundary (2026-10-20)
+This supersedes the *runtime not verified* status dated 2026-10-10 for the limited local-composition path only. GitHub Actions run `39357815690` on `bea86346189290c7a5f1837bf8892b01c81b53ab` passed, and merged `main@7dcff0c075c1f7b84ea2032783b6d7a3bd28d980` contains that same code. No claim of AI image-model generation, launch, or authorization follows from that proof.
