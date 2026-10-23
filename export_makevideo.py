@@ -50,7 +50,7 @@ def _receipt(path: Path) -> dict:
     fingerprint = value.get("continuity_fingerprint")
     if not isinstance(fingerprint, str) or not SHA_RE.fullmatch(fingerprint):
         raise HandoffError("MakeImage receipt lacks a valid continuity fingerprint.")
-    if value.get("continuity_cookie", {}).get("publish_authority") is not False:
+    if not isinstance(value.get("continuity_cookie"), dict) or value["continuity_cookie"].get("publish_authority") is not False:
         raise HandoffError("MakeImage receipt must not claim publishing authority.")
     return value
 
