@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - 'demo.py'
+      - 'export_makevideo.py'
       - 'requirements.txt'
       - 'CAPABILITY.md'
       - 'EXPORT_AUDIT.md'
