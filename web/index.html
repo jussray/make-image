@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0d0920" />
+  <title>MakeImage · Juss & Co.</title>
+  <meta name="description" content="Make a cinematic image with your own visuals, entirely on your device. MakeImage by Juss & Co." />
+  <link rel="stylesheet" href="./styles.css" />
+  <script src="./app.js" type="module"></script>
+</head>
+<body>
+  <div class="shell">
+    <header class="nav">
+      <a class="brand" href="./" aria-label="MakeImage home"><span class="mark">✦</span><span>MAKE<span class="light">IMAGE</span><small>JUSS & CO. STUDIO</small></span></a>
+      <span class="privacy">● Local-only editor · No uploads</span>
+    </header>
+    <main>
+      <section class="hero">
+        <p class="eyebrow">JUSS & CO. / CREATIVE STUDIO</p>
+        <h1>Make your vision <em>visible.</em></h1>
+        <p>Compose an original image or style a picture you own. Preview, then save the finished PNG to your device. Your images never leave this browser.</p>
+      </section>
+      <div class="grid">
+        <section class="card controls" aria-label="Image controls">
+          <h2>Compose your image</h2>
+          <p class="muted">A local image compositor, not an AI image generator.</p>
+          <div class="field">
+            <label for="source">Reference image (optional)</label>
+            <input id="source" type="file" accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp" aria-describedby="source-help" />
+            <small id="source-help">Only your own or approved PNG/JPEG/WebP files. Maximum 8 MB and 20 megapixels.</small>
+          </div>
+          <div class="field"><label for="title">Headline</label><input id="title" maxlength="100" value="A story worth seeing" /></div>
+          <div class="field"><label for="subtitle">Supporting text</label><input id="subtitle" maxlength="180" value="JUSS & CO. / ORIGINAL VISUAL" /></div>
+          <div class="field"><label for="format">Canvas format</label>
+            <select id="format"><option value="16:9">16:9 · Landscape</option><option value="9:16">9:16 · Portrait / Shorts</option><option value="1:1">1:1 · Square</option></select>
+          </div>
+          <div class="row"><button id="render" type="button" class="button secondary">Refresh preview</button><button id="download" type="button" class="button primary">Save PNG ↓</button></div>
+          <p id="status" role="status" aria-live="polite">Ready. All processing stays on this device.</p>
+          <p class="notice">Saving a PNG does not establish AI generation, asset ownership, rights clearance, or permission to publish. For hashed release evidence, use the separate MakeImage Python receipt workflow.</p>
+        </section>
+        <section class="card preview" aria-label="Image preview">
+          <div class="previewhead"><h2>Canvas preview</h2><span class="chip">LOCAL COMPOSITE</span></div>
+          <div class="stage"><canvas id="canvas" width="1280" height="720" aria-label="Generated image preview"></canvas></div>
+          <p class="muted">What you see is drawn to the same canvas used for PNG export. No external generation or upload.</p>
+        </section>
+      </div>
+      <section class="how"><h2>Production workflow</h2><p>Design here → save a local PNG → inspect source and output → validate it in MakeImage's Python pipeline for a receipt → use MakeVideo to animate approved visuals.</p></section>
+    </main>
+    <footer>Juss & Co. · MakeImage · Original creative work, reviewed before release</footer>
+  </div>
+</body>
+</html>

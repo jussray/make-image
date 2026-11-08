@@ -1,0 +1,9 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "make-image",
+  "compatibility_date": "2026-10-15",
+  "assets": {
+    "directory": "./dist"
+  },
+  "previews": {}
+}
