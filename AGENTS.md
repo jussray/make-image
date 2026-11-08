@@ -14,3 +14,6 @@ Applies to ChatGPT, Claude, Gemini, Perplexity, Muse, Codex, and any FCR/Chief/S
 Do not create duplicate PRs or projects, overwrite source assets, expose internal operational data publicly, or automatically publish media. FCR owns external publication authority. Keep MakeVideo, MakeImage and StoryEngine independently operable; interoperate through explicit versioned handoffs and verified receipts. A SHA-256 receipt establishes byte matching, not rights, AI generation, real-world motion, or publishing permission.
 
 This file is a repository instruction, not evidence that any agent, integration, test, hardening step or deployment has run.
+
+## Image → Code skill routing
+For any approved cinematic image, image/video handoff, graphics revision, or screenshot-parity request, read `.agents/skills/cinematic-image-to-code/SKILL.md` and use the existing project renderer and evidence gates. Render and compare **actual output** before claiming visual fidelity; title art or a storyboard is not game footage or continuous video. Preserve the original assets, explicit publication authority, and exact-head `main` verification.
