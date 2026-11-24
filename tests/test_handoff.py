@@ -58,6 +58,14 @@ class MakeVideoHandoffTests(unittest.TestCase):
         with self.assertRaisesRegex(HandoffError, "distinct"):
             export_storyboard(self.image, self.receipt, self.receipt)
 
+    def test_rejects_tampered_decoded_pixel_digest(self):
+        receipt = json.loads(self.receipt.read_text())
+        receipt["output"]["pixel_sha256"] = "0" * 64
+        self.receipt.write_text(json.dumps(receipt))
+        with self.assertRaisesRegex(HandoffError, "Decoded pixels differ"):
+            export_storyboard(self.image, self.receipt, self.out)
+        self.assertFalse(self.out.exists())
+
     def test_rejects_wrong_dimensions_and_invalid_titles(self):
         receipt = json.loads(self.receipt.read_text())
         receipt["output"]["width"] = 999
