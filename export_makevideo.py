@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import base64
+import hashlib
 from io import BytesIO
 import json
 from pathlib import Path
@@ -74,15 +75,21 @@ def export_storyboard(image: Path, receipt: Path, output: Path, *,
         raise HandoffError("Refusing to overwrite an existing storyboard.")
 
     proof = _receipt(receipt)
-    if sha256(image) != proof["output"]["sha256"]:
+    image_bytes = image.read_bytes()
+    if len(image_bytes) > MAX_IMAGE_BYTES or hashlib.sha256(image_bytes).hexdigest() != proof["output"]["sha256"]:
         raise HandoffError("Image bytes do not match the MakeImage receipt.")
     try:
-        with Image.open(image) as opened:
+        with Image.open(BytesIO(image_bytes)) as opened:
             if opened.format != "PNG" or opened.width * opened.height > 20_000_000:
                 raise HandoffError("Expected a PNG with at most 20 megapixels.")
             if opened.size != (proof["output"].get("width"), proof["output"].get("height")):
                 raise HandoffError("PNG dimensions differ from the receipt.")
-            canvas = ImageOps.fit(opened.convert("RGB"), FORMAT_SIZE[aspect],
+            opened.load()
+            rgb = opened.convert("RGB")
+            pixel_pin = proof["output"].get("pixel_sha256")
+            if pixel_pin is not None and pixel_pin != hashlib.sha256(rgb.tobytes()).hexdigest():
+                raise HandoffError("Decoded pixels differ from receipt.")
+            canvas = ImageOps.fit(rgb, FORMAT_SIZE[aspect],
                                   method=Image.Resampling.LANCZOS)
     except (OSError, UnidentifiedImageError, ValueError) as exc:
         if isinstance(exc, HandoffError):
