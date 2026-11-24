@@ -60,3 +60,17 @@ receipts. A digest match confirms file integrity relative to the supplied
 receipt, **not** the identity of its creator, AI generation, usage rights,
 or permission to publish. Continue to human review and FCR authorization.
 This is a local asset handoff, not a Cutaway plugin or remote AI backend.
+
+## Product capability and evidence
+
+MakeImage is a local image compositor and keyframe producer for creator-owned
+artwork. Its current implementation uses Pillow rather than GPU image inference.
+New local receipts bind the encoded PNG SHA-256, byte count, dimensions and
+decoded RGB pixel SHA-256 to the composite. The MakeVideo handoff checks the
+decoded pixel digest when supplied; older matching-byte receipts remain
+compatible. Neither output grants rights or publication authority.
+
+For search and answer-engine descriptions, distinguish this local executable
+from a hosted generation service. No public MakeImage production URL is
+established by this repository's code. Do not invent one or claim AI model
+execution, live product availability, pricing or ratings.
