@@ -1,4 +1,5 @@
 // MakeImage local-only browser compositor. No network endpoints or uploads.
+import { createCompositeReceipt, sha256Hex } from './proof.js';
 export const FORMATS = Object.freeze({
   '16:9': [1280, 720],
   '9:16': [720, 1280],
@@ -141,6 +142,8 @@ export function mountStudio(doc) {
   const status = el('status');
   const source = el('source');
   let reference = null;
+  let referenceSha256 = null;
+  let lastExport = null;
   let importOrdinal = 0;
   if (!ctx) {
     status.textContent = 'This browser cannot create a 2D canvas.';
@@ -168,14 +171,17 @@ export function mountStudio(doc) {
     const ordinal = ++importOrdinal;
     if (!file) {
       reference = null;
+      referenceSha256 = null;
       try { refresh(); } catch (error) { setStatus(error.message); }
       return;
     }
     try {
       validateReference(file);
       const next = await decodeReference(file);
+      const digest = await sha256Hex(await file.arrayBuffer());
       if (ordinal !== importOrdinal) return;
       reference = next;
+      referenceSha256 = digest;
       refresh();
     } catch (error) {
       if (ordinal === importOrdinal) setStatus('Reference rejected: ' + error.message);
@@ -186,27 +192,40 @@ export function mountStudio(doc) {
   };
   el('render').addEventListener('click', tryRefresh);
   for (const key of ['title', 'subtitle', 'format']) el(key).addEventListener('change', tryRefresh);
-  el('download').addEventListener('click', () => {
+  const saveBlob = (blob, filename) => {
+    const url = URL.createObjectURL(blob);
+    const anchor = doc.createElement('a');
+    anchor.href = url;
+    anchor.download = filename;
+    doc.body.append(anchor);
+    anchor.click();
+    anchor.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 30000);
+  };
+  const receiptButton = el('download-receipt');
+  el('download').addEventListener('click', async () => {
+    el('download').disabled = true;
+    receiptButton.disabled = true;
+    lastExport = null;
     try {
       refresh();
-      canvas.toBlob(blob => {
-        if (!blob) {
-          setStatus('PNG could not be encoded on this device.');
-          return;
-        }
-        const url = URL.createObjectURL(blob);
-        const anchor = doc.createElement('a');
-        anchor.href = url;
-        anchor.download = 'jussco-makeimage.png';
-        doc.body.append(anchor);
-        anchor.click();
-        anchor.remove();
-        setTimeout(() => URL.revokeObjectURL(url), 30000);
-        setStatus('PNG saved locally. Review artwork and usage rights before sharing.');
-      }, 'image/png');
+      const width = canvas.width, height = canvas.height, referenceDigest = referenceSha256;
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+      if (!blob) throw new Error('PNG could not be encoded on this device.');
+      const receipt = await createCompositeReceipt(blob,width,height,referenceDigest,doc);
+      const basename = 'jussco-makeimage-' + receipt.output.sha256.slice(0,12);
+      saveBlob(blob, basename + '.png');
+      lastExport = {receipt, basename};
+      receiptButton.disabled = false;
+      setStatus('PNG saved locally. Save its matching JSON receipt for the MakeVideo handoff.');
     } catch (error) {
       setStatus('Save blocked: ' + error.message);
-    }
+    } finally { el('download').disabled = false; }
+  });
+  receiptButton.addEventListener('click', () => {
+    if (!lastExport) return;
+    saveBlob(new Blob([JSON.stringify(lastExport.receipt,null,2)+'\n'],{type:'application/json'}),lastExport.basename+'.receipt.json');
+    setStatus('Matching receipt saved locally. Asset rights and publication still require review.');
   });
   tryRefresh();
 }
