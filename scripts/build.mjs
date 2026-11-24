@@ -2,7 +2,7 @@ import { cp, mkdir, rm, stat } from 'node:fs/promises';
 import path from 'node:path';
 
 const root = process.cwd();
-const inputs = ['web/index.html', 'web/app.js', 'web/styles.css'];
+const inputs = ['web/index.html', 'web/app.js', 'web/styles.css', 'web/proof.js', 'web/robots.txt', 'web/llms.txt', 'web/crawlers.json'];
 for (const entry of inputs) {
   const info = await stat(path.join(root, entry));
   if (!info.isFile() || info.size === 0) {
