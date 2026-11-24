@@ -74,3 +74,21 @@ For search and answer-engine descriptions, distinguish this local executable
 from a hosted generation service. No public MakeImage production URL is
 established by this repository's code. Do not invent one or claim AI model
 execution, live product availability, pricing or ratings.
+
+
+## Browser receipt handoff
+
+On the browser studio, choose **Save verified PNG**, then **Save matching JSON
+receipt**. The browser re-decodes the encoded PNG, hashes its RGB pixels and
+file bytes, and records the observed dimensions. Both downloads use the same
+digest-derived filename stem. The matching receipt remains tied to the last
+export, not later edits. The files stay on your device.
+
+The existing Python storyboard exporter accepts the same receipt schema.
+The receipt is not a signed producer identity, AI inference claim, rights
+clearance or publication permission. The browser proof requires a secure
+context with Web Crypto and image decoding support.
+
+Public discovery files are built with the studio. A canonical origin and
+sitemap must be bound to the verified production domain before launch; this
+branch does not assert an unobserved live URL.
