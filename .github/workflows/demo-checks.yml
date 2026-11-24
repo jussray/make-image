@@ -14,6 +14,7 @@ on:
   pull_request:
     paths:
       - 'demo.py'
+      - 'export_makevideo.py'
       - 'requirements.txt'
       - 'CAPABILITY.md'
       - 'EXPORT_AUDIT.md'
@@ -29,6 +30,8 @@ jobs:
     timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
+      - name: Verify exact tested head
+        run: test "$(git rev-parse HEAD)" = "${{ github.sha }}"
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
@@ -44,6 +47,12 @@ jobs:
           r=json.loads(Path('proof/demo.receipt.json').read_text())
           with Image.open('proof/demo.png') as image:
               image.verify()
+          with Image.open('proof/demo.png') as image:
+              image.load()
+              assert r['output']['pixel_sha256']==hashlib.sha256(image.convert('RGB').tobytes()).hexdigest()
+          assert r['output']['bytes']==Path('proof/demo.png').stat().st_size
+          assert r['output']['full_decode'] is True
+          assert r['output']['ai_inference_verified'] is False
           assert r['state']=='VERIFIED_LOCAL_RENDER'
           assert r['output']['sha256']==hashlib.sha256(Path('proof/demo.png').read_bytes()).hexdigest()
           assert r['continuity_cookie']['publish_authority'] is False
