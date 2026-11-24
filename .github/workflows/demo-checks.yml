@@ -10,6 +10,11 @@ on:
       - 'FOUNDER_PROVENANCE.md'
       - 'FOUNDER_DECISIONS_SUPPLEMENT.md'
       - 'tests/**'
+      - 'web/**'
+      - 'e2e/**'
+      - 'scripts/build.mjs'
+      - 'package.json'
+      - 'package-lock.json'
       - '.github/workflows/demo-checks.yml'
   pull_request:
     paths:
@@ -21,13 +26,18 @@ on:
       - 'FOUNDER_PROVENANCE.md'
       - 'FOUNDER_DECISIONS_SUPPLEMENT.md'
       - 'tests/**'
+      - 'web/**'
+      - 'e2e/**'
+      - 'scripts/build.mjs'
+      - 'package.json'
+      - 'package-lock.json'
       - '.github/workflows/demo-checks.yml'
 permissions:
   contents: read
 jobs:
   png-render-proof:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - name: Verify exact tested head
@@ -37,6 +47,30 @@ jobs:
           python-version: '3.11'
       - run: python -m pip install -r requirements.txt
       - run: python -m unittest discover -s tests -v
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: Verify shipped public discovery assets
+        run: test -s dist/index.html && test -s dist/proof.js && test -s dist/robots.txt && test -s dist/llms.txt && test -s dist/crawlers.json
+      - name: Install pinned browser test runtime
+        run: |
+          npm install --no-save --package-lock=false @playwright/test@1.61.1
+          npx playwright install --with-deps chromium
+      - name: Verify actual desktop and mobile PNG handoff
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 --directory dist >/tmp/makeimage-server.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in $(seq 1 25); do
+            if curl --fail --silent http://127.0.0.1:4173/ >/dev/null; then break; fi
+            sleep 1
+          done
+          curl --fail http://127.0.0.1:4173/ >/dev/null
+          npx playwright test e2e/makeimage.spec.mjs --reporter=line
       - name: Render and verify PNG artifact
         run: |
           python demo.py --title "GitHub Actions proof" --output proof/demo.png --receipt proof/demo.receipt.json
