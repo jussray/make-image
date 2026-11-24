@@ -4,8 +4,15 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#0d0920" />
-  <title>MakeImage · Juss & Co.</title>
+  <title>MakeImage | Local Image Compositor — Juss &amp; Co.</title>
   <meta name="description" content="Make a cinematic image with your own visuals, entirely on your device. MakeImage by Juss & Co." />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="MakeImage — Local Image Compositor" />
+  <meta property="og:description" content="Compose original visuals, preview your design, and save a locally verified PNG and matching receipt." />
+  <meta name="twitter:card" content="summary" />
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"WebApplication","name":"MakeImage","description":"Local browser image compositor with landscape, portrait and square PNG export and byte-matched receipts.","applicationCategory":"MultimediaApplication","operatingSystem":"Web browser","publisher":{"@type":"Organization","name":"Juss & Co."}}
+  </script>
   <link rel="stylesheet" href="./styles.css" />
   <script src="./app.js" type="module"></script>
 </head>
@@ -19,7 +26,7 @@
       <section class="hero">
         <p class="eyebrow">JUSS & CO. / CREATIVE STUDIO</p>
         <h1>Make your vision <em>visible.</em></h1>
-        <p>Compose an original image or style a picture you own. Preview, then save the finished PNG to your device. Your images never leave this browser.</p>
+        <p>MakeImage is a local image compositor. Compose an original image or style a picture you own. Preview, then save the finished PNG to your device. Your images never leave this browser.</p>
       </section>
       <div class="grid">
         <section class="card controls" aria-label="Image controls">
@@ -35,9 +42,9 @@
           <div class="field"><label for="format">Canvas format</label>
             <select id="format"><option value="16:9">16:9 · Landscape</option><option value="9:16">9:16 · Portrait / Shorts</option><option value="1:1">1:1 · Square</option></select>
           </div>
-          <div class="row"><button id="render" type="button" class="button secondary">Refresh preview</button><button id="download" type="button" class="button primary">Save PNG ↓</button></div>
+          <div class="row"><button id="render" type="button" class="button secondary">Refresh preview</button><button id="download" type="button" class="button primary">Save verified PNG ↓</button><button id="download-receipt" type="button" class="button secondary" disabled>Save matching JSON receipt</button></div>
           <p id="status" role="status" aria-live="polite">Ready. All processing stays on this device.</p>
-          <p class="notice">Saving a PNG does not establish AI generation, asset ownership, rights clearance, or permission to publish. For hashed release evidence, use the separate MakeImage Python receipt workflow.</p>
+          <p class="notice">Saving a PNG does not establish AI generation, asset ownership, rights clearance, or permission to publish. Save the matching local receipt to verify image bytes during handoff. It does not grant release authority.</p>
         </section>
         <section class="card preview" aria-label="Image preview">
           <div class="previewhead"><h2>Canvas preview</h2><span class="chip">LOCAL COMPOSITE</span></div>
@@ -45,7 +52,7 @@
           <p class="muted">What you see is drawn to the same canvas used for PNG export. No external generation or upload.</p>
         </section>
       </div>
-      <section class="how"><h2>Production workflow</h2><p>Design here → save a local PNG → inspect source and output → validate it in MakeImage's Python pipeline for a receipt → use MakeVideo to animate approved visuals.</p></section>
+      <section class="how"><h2>Production workflow</h2><p>Design here → save the verified local PNG → save its matching JSON receipt → import the pair into MakeVideo's proof handoff when available. The separate Python compositor and storyboard exporter also support the same receipt format.</p></section>
     </main>
     <footer>Juss & Co. · MakeImage · Original creative work, reviewed before release</footer>
   </div>
