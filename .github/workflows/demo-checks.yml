@@ -3,36 +3,74 @@ on:
   push:
     paths:
       - 'demo.py'
+      - 'export_makevideo.py'
       - 'requirements.txt'
       - 'CAPABILITY.md'
       - 'EXPORT_AUDIT.md'
       - 'FOUNDER_PROVENANCE.md'
       - 'FOUNDER_DECISIONS_SUPPLEMENT.md'
       - 'tests/**'
+      - 'web/**'
+      - 'e2e/**'
+      - 'scripts/build.mjs'
+      - 'package.json'
+      - 'package-lock.json'
       - '.github/workflows/demo-checks.yml'
   pull_request:
     paths:
       - 'demo.py'
+      - 'export_makevideo.py'
       - 'requirements.txt'
       - 'CAPABILITY.md'
       - 'EXPORT_AUDIT.md'
       - 'FOUNDER_PROVENANCE.md'
       - 'FOUNDER_DECISIONS_SUPPLEMENT.md'
       - 'tests/**'
+      - 'web/**'
+      - 'e2e/**'
+      - 'scripts/build.mjs'
+      - 'package.json'
+      - 'package-lock.json'
       - '.github/workflows/demo-checks.yml'
 permissions:
   contents: read
 jobs:
   png-render-proof:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+      - name: Verify exact tested head
+        run: test "$(git rev-parse HEAD)" = "${{ github.sha }}"
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
       - run: python -m pip install -r requirements.txt
       - run: python -m unittest discover -s tests -v
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: Verify shipped public discovery assets
+        run: test -s dist/index.html && test -s dist/proof.js && test -s dist/robots.txt && test -s dist/llms.txt && test -s dist/crawlers.json
+      - name: Install pinned browser test runtime
+        run: |
+          npm install --no-save --package-lock=false @playwright/test@1.61.1
+          npx playwright install --with-deps chromium
+      - name: Verify actual desktop and mobile PNG handoff
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 --directory dist >/tmp/makeimage-server.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in $(seq 1 25); do
+            if curl --fail --silent http://127.0.0.1:4173/ >/dev/null; then break; fi
+            sleep 1
+          done
+          curl --fail http://127.0.0.1:4173/ >/dev/null
+          npx playwright test e2e/makeimage.spec.mjs --reporter=line
       - name: Render and verify PNG artifact
         run: |
           python demo.py --title "GitHub Actions proof" --output proof/demo.png --receipt proof/demo.receipt.json
@@ -43,6 +81,12 @@ jobs:
           r=json.loads(Path('proof/demo.receipt.json').read_text())
           with Image.open('proof/demo.png') as image:
               image.verify()
+          with Image.open('proof/demo.png') as image:
+              image.load()
+              assert r['output']['pixel_sha256']==hashlib.sha256(image.convert('RGB').tobytes()).hexdigest()
+          assert r['output']['bytes']==Path('proof/demo.png').stat().st_size
+          assert r['output']['full_decode'] is True
+          assert r['output']['ai_inference_verified'] is False
           assert r['state']=='VERIFIED_LOCAL_RENDER'
           assert r['output']['sha256']==hashlib.sha256(Path('proof/demo.png').read_bytes()).hexdigest()
           assert r['continuity_cookie']['publish_authority'] is False

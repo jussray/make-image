@@ -34,3 +34,61 @@ python3 -m unittest discover -s tests -v
 ```
 
 The GitHub Actions image demo check runs the same tests. A passing test demonstrates local image export and provenance; external AI generation and UI Playwright proof are not claimed.
+## Export a local composite to MakeVideo (no accounts, no uploads)
+
+After rendering a MakeImage PNG and its matching local receipt, export an
+ordinary MakeVideo storyboard. The importer reads the source but does not modify
+or delete the PNG, receipt, or existing storyboard. It refuses an output filename
+that already exists. The tool checks PNG bytes, dimensions, and SHA-256 against
+the receipt before creating a bounded embedded JPEG preview.
+
+```sh
+python3 export_makevideo.py --image out/keyframe.png \
+  --receipt out/keyframe.receipt.json \
+  --output out/scene-for-makevideo.json \
+  --title "Juss & Co scene" --format 9:16
+```
+
+Open the generated `.json` using **Import** in MakeVideo's browser studio, then
+review the shot and export an animatic. MakeVideo's browser app also has a
+separate **MakeImage proof handoff** control accepting the original PNG and
+receipt directly (once that MakeVideo change is deployed).
+
+The storyboard stores a compressed copy of the source image, plus a SHA-256 and
+continuity note. It deliberately does not copy local filesystem paths from
+receipts. A digest match confirms file integrity relative to the supplied
+receipt, **not** the identity of its creator, AI generation, usage rights,
+or permission to publish. Continue to human review and FCR authorization.
+This is a local asset handoff, not a Cutaway plugin or remote AI backend.
+
+## Product capability and evidence
+
+MakeImage is a local image compositor and keyframe producer for creator-owned
+artwork. Its current implementation uses Pillow rather than GPU image inference.
+New local receipts bind the encoded PNG SHA-256, byte count, dimensions and
+decoded RGB pixel SHA-256 to the composite. The MakeVideo handoff checks the
+decoded pixel digest when supplied; older matching-byte receipts remain
+compatible. Neither output grants rights or publication authority.
+
+For search and answer-engine descriptions, distinguish this local executable
+from a hosted generation service. No public MakeImage production URL is
+established by this repository's code. Do not invent one or claim AI model
+execution, live product availability, pricing or ratings.
+
+
+## Browser receipt handoff
+
+On the browser studio, choose **Save verified PNG**, then **Save matching JSON
+receipt**. The browser re-decodes the encoded PNG, hashes its RGB pixels and
+file bytes, and records the observed dimensions. Both downloads use the same
+digest-derived filename stem. The matching receipt remains tied to the last
+export, not later edits. The files stay on your device.
+
+The existing Python storyboard exporter accepts the same receipt schema.
+The receipt is not a signed producer identity, AI inference claim, rights
+clearance or publication permission. The browser proof requires a secure
+context with Web Crypto and image decoding support.
+
+Public discovery files are built with the studio. A canonical origin and
+sitemap must be bound to the verified production domain before launch; this
+branch does not assert an unobserved live URL.

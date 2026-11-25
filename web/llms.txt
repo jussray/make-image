@@ -1,0 +1,5 @@
+# MakeImage — Juss & Co.
+
+MakeImage is a local browser image compositor. It composes original visuals or creator-approved PNG, JPEG and WebP references into landscape, portrait or square PNG images. The browser verifies encoded PNG bytes and decoded RGB pixels and can export a matching JSON receipt. A separate local Python compositor and storyboard exporter support the same receipt format. It is not a hosted AI inference service. No upload, automatic publication or rights grant is implied.
+
+Public discovery: /, /robots.txt, /crawlers.json. Search and user-directed retrieval are limited to public product information and studio assets. Model training and bulk dataset collection are denied by default. Source and local test evidence do not establish a production release.

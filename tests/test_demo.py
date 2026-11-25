@@ -18,6 +18,12 @@ class ImageProductionTest(unittest.TestCase):
                 self.assertEqual(image.format,'PNG')
                 self.assertNotEqual(image.getpixel((20,20)),image.getpixel((400,120)))
             self.assertEqual(result['output']['sha256'],sha256(png))
+            self.assertEqual(result['output']['bytes'],png.stat().st_size)
+            self.assertTrue(result['output']['full_decode'])
+            with Image.open(png) as decoded:
+                import hashlib
+                self.assertEqual(result['output']['pixel_sha256'],hashlib.sha256(decoded.convert('RGB').tobytes()).hexdigest())
+            self.assertFalse(result['output']['ai_inference_verified'])
             self.assertEqual(result['state'],'VERIFIED_LOCAL_RENDER')
             self.assertFalse(json.loads(receipt.read_text())['continuity_cookie']['publish_authority'])
             with self.assertRaises(ImageFlowError):render(png,receipt,title='Other',subtitle='Other',width=640,height=360)

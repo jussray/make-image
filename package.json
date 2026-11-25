@@ -1,0 +1,12 @@
+{
+  "name": "@jussandco/makeimage-studio",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Juss & Co local-only MakeImage browser studio and Python compositor",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node --test tests/*.test.mjs"
+  },
+  "engines": {"node": ">=20"}
+}

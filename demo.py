@@ -17,6 +17,7 @@ import random
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
+from io import BytesIO
 
 from PIL import Image, ImageDraw, ImageFont, ImageOps, ImageFilter, UnidentifiedImageError
 
@@ -44,17 +45,21 @@ def font(size: int) -> ImageFont.ImageFont:
     return ImageFont.load_default()
 
 
-def source_image(reference: Path, width: int, height: int) -> Image.Image:
+def source_image(reference: Path, width: int, height: int, *, source_bytes: bytes | None = None) -> Image.Image:
     if reference.suffix.lower() not in SUPPORTED or not reference.is_file():
         raise ImageFlowError('Reference must be a local PNG, JPEG, or WebP image.')
     if reference.stat().st_size < 100 or reference.stat().st_size > MAX_SOURCE_BYTES:
         raise ImageFlowError('Reference image must be nonempty and at most 16 MiB.')
     try:
-        with Image.open(reference) as source:
+        data = source_bytes if source_bytes is not None else reference.read_bytes()
+        if not 100 <= len(data) <= MAX_SOURCE_BYTES:
+            raise ImageFlowError('Reference image size is invalid.')
+        with Image.open(BytesIO(data)) as source:
             if source.width * source.height > MAX_SOURCE_PIXELS:
                 raise ImageFlowError('Reference image exceeds the pixel safety limit.')
             source.verify()
-        with Image.open(reference) as source:
+        with Image.open(BytesIO(data)) as source:
+            source.load()
             return ImageOps.fit(ImageOps.exif_transpose(source).convert('RGB'), (width, height), method=Image.Resampling.LANCZOS)
     except (UnidentifiedImageError, OSError, ValueError) as error:
         raise ImageFlowError('Reference image could not be decoded safely.') from error
@@ -107,7 +112,10 @@ def render(output: Path, receipt: Path, *, title: str, subtitle: str, width: int
         raise ImageFlowError('Output must be PNG; receipt must be JSON.')
     if output.exists() or receipt.exists():
         raise ImageFlowError('Existing outputs are protected. Choose new filenames.')
-    base=source_image(ref,width,height) if ref else original_background(width,height,seed)
+    if ref and (not ref.is_file() or not 100 <= ref.stat().st_size <= MAX_SOURCE_BYTES):
+        raise ImageFlowError('Reference image size is invalid.')
+    source_bytes=ref.read_bytes() if ref else None
+    base=source_image(ref,width,height,source_bytes=source_bytes) if ref else original_background(width,height,seed)
     overlay=Image.new('RGBA',(width,height),(0,0,0,0))
     d=ImageDraw.Draw(overlay,'RGBA')
     left=int(width*.065)
@@ -130,23 +138,29 @@ def render(output: Path, receipt: Path, *, title: str, subtitle: str, width: int
     image=Image.alpha_composite(base.convert('RGBA'),overlay).convert('RGB')
     output.parent.mkdir(parents=True,exist_ok=True)
     receipt.parent.mkdir(parents=True,exist_ok=True)
-    image.save(output,format='PNG',optimize=True)
-    with Image.open(output) as check:
+    encoded=BytesIO()
+    image.save(encoded,format='PNG',optimize=True)
+    data=encoded.getvalue()
+    with Image.open(BytesIO(data)) as check:
         check.verify()
-    with Image.open(output) as check:
-        if check.format!='PNG' or check.size!=(width,height):
-            output.unlink(missing_ok=True)
+    with Image.open(BytesIO(data)) as check:
+        check.load()
+        if check.format!='PNG' or check.size!=(width,height) or check.mode!='RGB':
             raise ImageFlowError('Pixel verification failed.')
-    ref_info={"path":str(ref),"sha256":sha256(ref)} if ref else None
+        pixel_sha256=hashlib.sha256(check.tobytes()).hexdigest()
+    ref_info={"path":str(ref),"sha256":hashlib.sha256(source_bytes).hexdigest()} if ref else None
     fingerprint=hashlib.sha256(json.dumps({"reference":ref_info,"title":title,"subtitle":subtitle,"seed":seed,"width":width,"height":height},sort_keys=True).encode()).hexdigest()
     proof={
         "schema":"makeimage/local-composite/v1","state":"VERIFIED_LOCAL_RENDER","generated_at_utc":datetime.now(timezone.utc).isoformat(),
         "continuity_fingerprint":fingerprint,"continuity_cookie":{"parent":fingerprint[:16],"release_authority":False,"publish_authority":False},
         "reference":ref_info,"source_method":"local Pillow composition, not AI generation",
-        "output":{"path":str(output),"sha256":sha256(output),"width":width,"height":height,"format":"PNG"},
+        "output":{"path":str(output),"sha256":hashlib.sha256(data).hexdigest(),"pixel_sha256":pixel_sha256,"bytes":len(data),"full_decode":True,"ai_inference_verified":False,"width":width,"height":height,"format":"PNG"},
         "limitations":["Does not invoke an external image-generation model","No identity/rights checks for user-supplied reference","No publishing or external upload"],
     }
-    receipt.write_text(json.dumps(proof,indent=2,sort_keys=True)+'\n',encoding='utf-8')
+    with output.open('xb') as dst:
+        dst.write(data)
+    with receipt.open('x',encoding='utf-8') as dst:
+        dst.write(json.dumps(proof,indent=2,sort_keys=True)+'\n')
     return proof
 
 
